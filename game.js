@@ -1,3 +1,18 @@
+
+class IntroScene extends AdventureScene {
+    constructor() {
+        super("intro", "hub");
+    }
+
+    onEnter() {
+        
+    }
+}
+
+
+
+
+/*  Saving For Viewing
 class Demo1 extends AdventureScene {
     constructor() {
         super("demo1", "First Room");
@@ -116,7 +131,7 @@ class Outro extends Phaser.Scene {
         this.input.on('pointerdown', () => this.scene.start('intro'));
     }
 }
-
+*/
 
 const game = new Phaser.Game({
     scale: {
