@@ -230,4 +230,12 @@ class AdventureScene extends Phaser.Scene {
     onEnter() {
         console.warn('This AdventureScene did not implement onEnter():', this.constructor.name);
     }
+
+    // Extensions Below
+
+
+
+
+
+
 }

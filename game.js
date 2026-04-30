@@ -23,6 +23,7 @@ class Intro extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#040417');
         this.cameras.main.fadeIn(1000, 0, 0, 0);
         this.introTrans = false;
+        this.count = 0;
         //create random stars
         this.stars = [];
         for(let i = 0; i < 200; i++) {
@@ -54,6 +55,13 @@ class Intro extends Phaser.Scene {
         //Intro Fade
         this.tweens.add({ targets: [title, clickToStart], alpha: 1, duration: 2000, delay: 500 });
         this.tweens.add({ targets: this.earthGroup, alpha: 1, duration: 2000, delay: 1000 });
+
+        this.input.once('pointerdown', () => {
+            this.introTrans = true;
+            this.tweens.add({ targets: [title, clickToStart], alpha: 0, duration: 2000,       
+             });
+                this.tweens.add({ targets: this.earthGroup, alpha: 0, scale: 0, duration: 2500 });
+            });
     }
 
     update(time, delta) {
@@ -68,10 +76,31 @@ class Intro extends Phaser.Scene {
                 this.grfx.fillCircle(star.x, star.y, star.r);
             }
         } else { //when transition starts, stars expand, earth shrinks.
-
+            this.lightspeedTimer += delta;
+            const cx = W * 0.5;
+            const cy = H * 0.5;
+            for(let star of this.stars) {
+                //try to make stars strech out from the center of screen with tween
+                const angle = Math.atan2(star.y - cy, star.x - cx);
+                star.x += Math.cos(angle) * 30 * delta * 0.01;
+                star.y += Math.sin(angle) * 30 * delta * 0.01;
+                this.grfx.fillStyle(0xffffff, star.r / 2);
+                this.grfx.fillCircle(star.x, star.y, star.r);
+                //couldent figure out strech so made them move outwards.
+            }
+            this.scene.start('hub', {intenventory: []});
         }
     }
 }
+
+    class Hub extends AdventureScene {
+    constructor() {super('hub', 'Spaceship Hub'); }
+
+    onEnter() {
+
+    }
+}
+
 const game = new Phaser.Game({
     scale: {
         mode: Phaser.Scale.FIT,
