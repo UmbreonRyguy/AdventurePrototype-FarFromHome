@@ -1,138 +1,77 @@
+ //FAR FROME HOME
 
-class IntroScene extends AdventureScene {
-    constructor() {
-        super("intro", "hub");
-    }
+ // Scene Names:
 
-    onEnter() {
-        
-    }
-}
+ // Non Adventure - intro, endDeath, endWar, endPeace
 
+ // Adventure Scenes - hub, xs62, canyon, r40, town, belabog, moon, moonbase, secretRoom
 
+const W = 1920;
+const H = 1080;
 
-
-/*  Saving For Viewing
-class Demo1 extends AdventureScene {
-    constructor() {
-        super("demo1", "First Room");
-    }
-
-    onEnter() {
-
-        let clip = this.add.text(this.w * 0.3, this.w * 0.3, "📎 paperclip")
-            .setFontSize(this.s * 2)
-            .setInteractive()
-            .on('pointerover', () => this.showMessage("Metal, bent."))
-            .on('pointerdown', () => {
-                this.showMessage("No touching!");
-                this.tweens.add({
-                    targets: clip,
-                    x: '+=' + this.s,
-                    repeat: 2,
-                    yoyo: true,
-                    ease: 'Sine.inOut',
-                    duration: 100
-                });
-            });
-
-        let key = this.add.text(this.w * 0.5, this.w * 0.1, "🔑 key")
-            .setFontSize(this.s * 2)
-            .setInteractive()
-            .on('pointerover', () => {
-                this.showMessage("It's a nice key.")
-            })
-            .on('pointerdown', () => {
-                this.showMessage("You pick up the key.");
-                this.gainItem('key');
-                this.tweens.add({
-                    targets: key,
-                    y: `-=${2 * this.s}`,
-                    alpha: { from: 1, to: 0 },
-                    duration: 500,
-                    onComplete: () => key.destroy()
-                });
-            })
-
-        let door = this.add.text(this.w * 0.1, this.w * 0.15, "🚪 locked door")
-            .setFontSize(this.s * 2)
-            .setInteractive()
-            .on('pointerover', () => {
-                if (this.hasItem("key")) {
-                    this.showMessage("You've got the key for this door.");
-                } else {
-                    this.showMessage("It's locked. Can you find a key?");
-                }
-            })
-            .on('pointerdown', () => {
-                if (this.hasItem("key")) {
-                    this.loseItem("key");
-                    this.showMessage("*squeak*");
-                    door.setText("🚪 unlocked door");
-                    this.gotoScene('demo2');
-                }
-            })
-
-    }
-}
-
-class Demo2 extends AdventureScene {
-    constructor() {
-        super("demo2", "The second room has a long name (it truly does).");
-    }
-    onEnter() {
-        this.add.text(this.w * 0.3, this.w * 0.4, "just go back")
-            .setFontSize(this.s * 2)
-            .setInteractive()
-            .on('pointerover', () => {
-                this.showMessage("You've got no other choice, really.");
-            })
-            .on('pointerdown', () => {
-                this.gotoScene('demo1');
-            });
-
-        let finish = this.add.text(this.w * 0.6, this.w * 0.2, '(finish the game)')
-            .setInteractive()
-            .on('pointerover', () => {
-                this.showMessage('*giggles*');
-                this.tweens.add({
-                    targets: finish,
-                    x: this.s + (this.h - 2 * this.s) * Math.random(),
-                    y: this.s + (this.h - 2 * this.s) * Math.random(),
-                    ease: 'Sine.inOut',
-                    duration: 500
-                });
-            })
-            .on('pointerdown', () => this.gotoScene('outro'));
-    }
-}
 
 class Intro extends Phaser.Scene {
     constructor() {
-        super('intro')
+        super("intro");
     }
+
     create() {
-        this.add.text(50,50, "Adventure awaits!").setFontSize(50);
-        this.add.text(50,100, "Click anywhere to begin.").setFontSize(20);
-        this.input.on('pointerdown', () => {
-            this.cameras.main.fade(1000, 0,0,0);
-            this.time.delayedCall(1000, () => this.scene.start('demo1'));
-        });
+
+        //setup
+        this.W = W;
+        this.H = H;
+        this.cameras.main.setBackgroundColor('#040417');
+        this.cameras.main.fadeIn(1000, 0, 0, 0);
+        this.introTrans = false;
+        //create random stars
+        this.stars = [];
+        for(let i = 0; i < 200; i++) {
+            this.stars.push({
+                x: Math.random() * this.W,
+                y: Math.random() * this.H,
+                r: Math.random() * 2,
+            });
+        }
+        this.grfx = this.add.graphics();
+
+        //Earth
+        this.earth = this.add.circle(this.W * 0.5, this.H * 0.5, 100, 0x2233ee);
+        this. land = this.add.circle(this.W * 0.48, this.H * 0.46, 45, 0x21872a);
+        this.land2 = this.add.circle(this.W * 0.52, this.H * 0.55, 30, 0x21872a);
+
+        this.earthGroup = [this.earth, this.land, this.land2];
+
+        //Title
+        const title = this.add.text(this.W * 0.5, this.H * 0.15, "FAR FROM HOME", {
+                fontSize: '128px', color: '#ffffff', fontStyle: 'bold',
+                stroke: '#001122', strokeThickness: 5
+            }).setOrigin(0.5).setAlpha(0);
+        //Start
+        const clickToStart = this.add.text(this.W * 0.5, this.H * 0.90, "Click to Launch!", {
+            fontSize: '35px', color: '#cacce3', 
+            stroke: '#001122', strokeThickness: 5
+        }).setOrigin(0.5).setAlpha(0);
+        //Intro Fade
+        this.tweens.add({ targets: [title, clickToStart], alpha: 1, duration: 2000, delay: 500 });
+        this.tweens.add({ targets: this.earthGroup, alpha: 1, duration: 2000, delay: 1000 });
+    }
+
+    update(time, delta) {
+        //setup
+        this.grfx.clear();
+        const W = this.W;
+        const H = this.H;
+        //create stars
+        if(!this.introTrans) {
+            for(let star of this.stars) {
+                this.grfx.fillStyle(0xffffff, star.r / 2);
+                this.grfx.fillCircle(star.x, star.y, star.r);
+            }
+        } else { //when transition starts, stars expand, earth shrinks.
+
+        }
     }
 }
-
-class Outro extends Phaser.Scene {
-    constructor() {
-        super('outro');
-    }
-    create() {
-        this.add.text(50, 50, "That's all!").setFontSize(50);
-        this.add.text(50, 100, "Click anywhere to restart.").setFontSize(20);
-        this.input.on('pointerdown', () => this.scene.start('intro'));
-    }
-}
-*/
-
 const game = new Phaser.Game({
     scale: {
         mode: Phaser.Scale.FIT,
@@ -140,7 +79,7 @@ const game = new Phaser.Game({
         width: 1920,
         height: 1080
     },
-    scene: [Intro, Demo1, Demo2, Outro],
-    title: "Adventure Game",
+    scene: [Intro],
+    title: "Adventure-Game",
 });
 
