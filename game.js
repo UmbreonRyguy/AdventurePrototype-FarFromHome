@@ -56,12 +56,16 @@ class Intro extends Phaser.Scene {
         this.tweens.add({ targets: [title, clickToStart], alpha: 1, duration: 2000, delay: 500 });
         this.tweens.add({ targets: this.earthGroup, alpha: 1, duration: 2000, delay: 1000 });
 
+        //Transition to Hub
         this.input.once('pointerdown', () => {
             this.introTrans = true;
             this.tweens.add({ targets: [title, clickToStart], alpha: 0, duration: 2000,       
              });
-                this.tweens.add({ targets: this.earthGroup, alpha: 0, scale: 0, duration: 2500 });
+                this.tweens.add({ targets: this.earthGroup, alpha: 0, scale: 0, duration: 3000, onComplete: () => {
+                    this.scene.start('hub', {inventory: []});
+                } 
             });
+        });
     }
 
     update(time, delta) {
@@ -88,17 +92,71 @@ class Intro extends Phaser.Scene {
                 this.grfx.fillCircle(star.x, star.y, star.r);
                 //couldent figure out strech so made them move outwards.
             }
-            this.scene.start('hub', {intenventory: []});
         }
     }
 }
 
-    class Hub extends AdventureScene {
+class Hub extends AdventureScene {
     constructor() {super('hub', 'Spaceship Hub'); }
 
     onEnter() {
+        const w = this.w;
+        const h = this.h;
+        const s = this.s;
+        this.cameras.main.setBackgroundColor('#1a1a1e');
 
+        //Items
+        let scanner = this.add.text(this.w * 0.35, this.h * 0.3, '🔬 Scanner', { fontSize: '32px', color: '#ffffff'})
+            .setOrigin(0.5)
+            .setInteractive()
+            .on('pointerover', () => {
+                this.showMessage("It's a scanner used to collect information about planets.")
+            })
+            .on('pointerdown', () => {
+                this.showMessage("You aquired the scanner.");
+                this.gainItem('🔬 Scanner');
+                this.tweens.add({
+                    targets: scanner,
+                    y: `-=${20}`,
+                    alpha: { from: 1, to: 0 },
+                    duration: 500,
+                    onComplete: () => scanner.destroy()
+                });
+            });
+        //Console UI
+        this.add.rectangle(w * 0.375, h * 0.74, 50 * s, 16 * s, 0x060e1a)
+            .setStrokeStyle(s * 0.2, 0x1a3355);
+        this.add.text(w * 0.375, h * 0.65, '- Navigation Console -', {
+            fontSize: '32px', color: '#394f64'
+        }).setOrigin(0.5);
+        //Planets
+         const planets = [ //creat dict of planets with name, color, x position, and tip to reduce redundancy
+            { key: 'xs26', name: '🟢 XS-26', col: '#44bb44', x: w * 0.21,
+              tip: 'XS-26: Vivid green planet. Something unusual is out there.' },
+            { key: 'r40', name: '🔴 R-40', col: '#cc5533', x: w * 0.375,
+              tip: 'R-40: Red desert world. Our radar suggest structes beneath the dunes.' },
+            { key: 'belabog', name: '🔵 Belabog', col: '#4499cc', x: w * 0.54,
+              tip: 'Belabog: Frozen but promising. Most Earth-like in the system.' },
+        ];
+
+        for (const p of planets) {
+            const button = this.add.text(p.x, h * 0.755, `${p.name}`, {
+                fontSize: `${2.3 * s}px`, color: p.col
+            }).setOrigin(0.5).setInteractive()
+            .on('pointerover', () => this.showMessage(p.tip))
+            .on('pointerdown', () => {
+                if (!this.hasItem('🔬 Scanner')) {
+                    this.showMessage('Grab the scanner first.');
+                    this.tweens.add({ targets: button, x: button.x + s * 0.7, yoyo: true, repeat: 4, duration: 55 });
+                } else {
+                    this.gotoScene(p.key);
+                }
+            });
+        }     
     }
+    //Secret Room
+
+    //Planet Scenes
 }
 
 const game = new Phaser.Game({
@@ -108,7 +166,7 @@ const game = new Phaser.Game({
         width: 1920,
         height: 1080
     },
-    scene: [Intro],
+    scene: [Hub],
     title: "Adventure-Game",
 });
 
