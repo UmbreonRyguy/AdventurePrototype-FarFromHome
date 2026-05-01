@@ -177,9 +177,12 @@ class Hub extends AdventureScene {
         .on('pointerover', () => this.showMessage('Run the scanner to analyse XS-26\'s survivability.'))
         .on('pointerdown', () => {
             if(!this.scanned) {
-                //Scan using function
+                this.scanPlanet('xs26', () => {
+                    this.scanned = true;
+                    this.showMessage('Scan complete! XS-26 is uninhabitable')
+                })
             }else{
-                this.showMessage('Already scanned! R-40 is uninhabitable.')
+                this.showMessage('Already scanned! XS-26 is uninhabitable.')
             }
         })
         //Planet Features
@@ -193,6 +196,24 @@ class Hub extends AdventureScene {
         }).setInteractive()
         .on('pointerover', () => this.showMessage(
             'Translucent green crystals emerge from the soil. They vibrate at a very low frequency, which you can feel through your spacesuit.'))
+
+        
+        this.add.text(w * 0.32, h * 0.61, '☣️ toxic river', {
+            fontSize: '40px', color: '#2be61e'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage(
+            'A river flowing with glowing green bubbling liquid. Collect a sample?'))
+        .on('pointerdown', () => {
+            if (this.hasItem('🧪 xs26 sample')) {
+                this.showMessage('Sample already collected.');
+            } else if (!this.scanned) {
+                this.showMessage('Run a planet scan first — sample collecting requires planetary data.');
+            } else {
+                this.collectSample(0x60ff44, '🧪 XS-26 sample', () => {
+                    this.showMessage('River sample collected.');
+                });
+            }
+        });
         
         //Canyon Item
         this.add.text(w * 0.58, h * 0.44, '⛰️ Canyon >', {
@@ -201,7 +222,7 @@ class Hub extends AdventureScene {
         .on('pointerover', () => this.showMessage('A massive canyon is just ahead. There is no visible bottom due to the thick clouds.'))
         .on('pointerdown', () => this.gotoScene('canyon'));
 
-        this.add.text(w * 0.05, h * 0.09, '< back to Hub', {
+        this.add.text(w * 0.05, h * 0.09, '🚀 back to Hub', {
         fontSize: '40px', color: '#f7f7f7'
         }).setInteractive()
         .on('pointerover', () => this.showMessage('Return to the ship'))
@@ -238,9 +259,83 @@ class Canyon extends AdventureScene {
       
       onEnter() {
         const w = this.w, h = this.h, s = this.s;
-        this.cameras.main.setBackgroundColor('#361616');
+        this.cameras.main.setBackgroundColor('#291010');
+
+        //Scan
+        this.add.text(w * 0.07, h * 0.47, '🔬 scan planet', {
+            fontSize: '40px', color: '#bf2e2e'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage('Run the scanner to analyse R-40\'s survivability.'))
+        .on('pointerdown', () => {
+            if(!this.scanned) {
+                this.scanned = true;
+                this.scanPlanet('r40', () => {
+                    this.showMessage('Scan complete! R-40 is uninhabitable.');
+                });
+            }else{
+                this.showMessage('Already scanned! R-40 is uninhabitable.')
+            }
+        })
+        //features
+        this.add.text(w * 0.24, h * 0.7, '🏜️ red dunes', {
+            fontSize: '40px', color: '#aa4422'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage(
+            'Sweeping red dunes stretch past the horizon. Wind blows up dust into your face as you take in your surroundings.'));
         
-      }
+        //sample
+        this.add.text(w * 0.32, h * 0.81, '🧱 collect sand sample', {
+            fontSize: '40px', color: '#d1a23d'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage(
+            'Theres sand around you for as far as you can see. Collect a sample?'))
+        .on('pointerdown', () => {
+            if (this.hasItem('🧪 R-40 sample')) {
+                this.showMessage('Sample already collected.');
+            } else if (!this.scanned) {
+                this.showMessage('Run a planet scan first — sample collecting requires planetary data.');
+            } else {
+                this.collectSample(0xe94f2c, '🧪 r40 sample', () => {
+                    this.showMessage('Sand sample collected.');
+                });
+            }
+        });
+        //items
+
+        let alienRing = this.add.text(this.w * 0.35, this.h * 0.3, '💍 Alien ring', { fontSize: '32px', color: '#ffffff'})
+            .setOrigin(0.5)
+            .setInteractive()
+            .on('pointerover', () => {
+                this.showMessage("Something glitters through the dust.")
+            })
+            .on('pointerdown', () => {
+                this.showMessage("You aquired a mysterious ring.");
+                this.gainItem('💍 Alien ring');
+                this.tweens.add({
+                    targets: alienRing,
+                    y: `-=${20}`,
+                    alpha: { from: 1, to: 0 },
+                    duration: 500,
+                    onComplete: () => alienRing.destroy()
+                });
+            });
+        this.add.text(w * 0.5, h * 0.5, '🏛️ engraved symbols', {
+                fontSize: '40px', color: '#664422'
+            }).setInteractive()
+            .on('pointerover', () => this.showMessage(
+                'You\'re able to make out a string of characters carved deep into a pillar jutting through the red sand'))
+            .on('pointerdown', () => {
+                this.showMessage('You record the code, XI-776.');
+                this.gainItem('📝 code: XI-776');
+            });
+        
+        
+        this.add.text(w * 0.05, h * 0.09, '🚀 back to Hub', {
+        fontSize: '40px', color: '#f7f7f7'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage('Return to the ship'))
+        .on('pointerdown', () => this.gotoScene('hub'));
+        }
     }
  class PlanetBelabog extends AdventureScene {
       constructor() { super('belabog', 'Planet Belabog');}
@@ -249,8 +344,181 @@ class Canyon extends AdventureScene {
         const w = this.w, h = this.h, s = this.s;
         this.cameras.main.setBackgroundColor('#223235');
         
+        this.add.text(w * 0.48, h * 0.56, '❄️ ice formation', {
+            fontSize: '40px', color: '#225577'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage(
+            'Towering blue ice spires wayne down over you as far as the eye can see'))
+        .on('pointerdown', () => this.showMessage('Your glove comes away coated in small ice crystals.'));
+
+        this.add.text(w * 0.07, h * 0.47, '🔬 scan planet', {
+            fontSize: '40px', color: '#4448bb'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage('Run the scanner to analyse Belabog\'s survivability.'))
+        .on('pointerdown', () => {
+            if(!this.scanned) {
+                this.scanned = true;
+                this.scanPlanet('belabog', () => {
+                    this.showMessage('Scan complete!');
+                })
+            }else{
+                this.showMessage('Already scanned! Belabog is the most promising, however the cold would kill in an instant.')
+            }
+        })
+        this.add.text(w * 0.32, h * 0.71, '🧊 frozen lake', {
+            fontSize: '40px', color: '#3388bb'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage(
+            'Thick layer of ice with what appears to be water below. Collect a sample?'))
+        .on('pointerdown', () => {
+            if (this.hasItem('🧪 belabog sample')) {
+                this.showMessage('Sample already collected.');
+            } else if (!this.scanned) {
+                this.showMessage('Run a planet scan first — sample collecting requires planetary data.');
+            } else {
+                this.collectSample(0x44aaff, '🧪 belabog sample', () => {
+                    this.showMessage('Ice sample collected.');
+                });
+            }
+        });
+
+        this.add.text(w * 0.5, h * 0.09, '🌙 travel to moon', {
+        fontSize: '40px', color: '#98aedd'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage('Visit Belabog\'s moon'))
+        .on('pointerdown', () => this.gotoScene('moon'));
+
+
+        this.add.text(w * 0.05, h * 0.09, '🚀 back to Hub', {
+        fontSize: '40px', color: '#f7f7f7'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage('Return to the ship'))
+        .on('pointerdown', () => this.gotoScene('hub'));
       }
     }
+class Moon extends AdventureScene {
+    constructor() { super('moon', "Belabog's Moon"); }
+
+    onEnter() {
+        const w = this.w, h = this.h, s = this.s;
+        this.cameras.main.setBackgroundColor('#252529');
+
+
+        this.add.text(w * 0.3, h * 0.5, '🏛️ massive alien structure', {
+        fontSize: '40px', color: '#565e71'
+        }).setInteractive()
+        .on('pointerover', () => this.showMessage('A masive structure looms before you. A large plaque states \"Recite the Code of Knowlege to be granted entry\". Enter?'))
+        .on('pointerdown', () => {
+            if(this.hasItem('📝 code: XI-776')){
+                this.gotoScene('moonbase');
+            } else {
+                this.showMessage("Only those with the knowlege of our code may enter");
+            }
+        }    
+    );
+
+
+
+
+
+
+        this.add.text(w * 0.05, h * 0.09, '< back to Belabog', {
+            fontSize: '40px', color: '#f7f7f7'
+            }).setInteractive()
+            .on('pointerover', () => this.showMessage('Return to the surface of Belabog.'))
+            .on('pointerdown', () => this.gotoScene('belabog'));
+    }
+}
+
+class MoonBase extends AdventureScene {
+    constructor() {super('moonbase', 'Inside the Moonbase')}
+
+    onEnter(){
+    const w = this.w, h = this.h, s = this.s;
+    this.cameras.main.setBackgroundColor('#030310');
+    
+
+    const aliens = this.add.text(w * 0.375, h * 0.25, '👾  👾  👾', {
+            fontSize: '80px'
+        })
+        .setOrigin(0.5)
+        .setInteractive()
+        .on('pointerover', () => this.showMessage(
+            'Tall alien beings with large dark eyes tower before you with weapons drawn. They\'re waiting for you to act.'));
+
+        this.add.text(w * 0.375, h * 0.42, 'Three beings level their weapons at you.', {
+            fontSize: '40px', color: '#5544aa'
+        }).setOrigin(0.5);
+
+        this.add.text(w * 0.375, h * 0.51, '- What do you present to the aliens? -', {
+            fontSize: '50px', color: '#7766bb', fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        //Ending Choices
+        let choiceY = h * 0.6;
+        //Present Ring
+         if (this.hasItem('💍 Alien ring')) {
+            const ringBtn = this.add.text(w * 0.375, choiceY, '💍  Hold out the alien ring', {
+                fontSize: '45px', color: '#ddcc44'
+            }).setOrigin(0.5).setInteractive()
+            .on('pointerover', () => this.showMessage(
+                'The ring bears a symbol the same as the carvings inside this structure. Maybe it means something to them.'))
+            .on('pointerdown', () => {
+                this.showMessage('One of the beings gasps. All three lower their weapons...');
+                this.loseItem('💍 Alien ring');
+                this.cameras.main.fade(1800, 0, 0, 0);
+                this.time.delayedCall(2000, () => this.scene.start('endingPeace'));
+            });
+            choiceY += 5.5 * s;
+        }
+        //Present a Sample
+        const sampleChoices = [
+            { item: '🧪 xs26 sample',    label: 'Hold out the XS-26 sample' },
+            { item: '🧪 r40 sample',     label: 'Hold out the R-40 sample'  },
+            { item: '🧪 belabog sample', label: 'Hold out the Belabog sample' },
+        ].filter(c => this.hasItem(c.item));
+
+        if (sampleChoices.length > 0) {
+            const sc = sampleChoices[0];
+            const sBtn = this.add.text(w * 0.375, choiceY, `🧪  ${sc.label}`, {
+                fontSize: '45px', color: '#44aa55'
+            }).setOrigin(0.5).setInteractive()
+            .on('pointerover', () => this.showMessage(
+                'A vial of material colected from their galaxy. Show them what you\'ve collected. How will they react?'))
+            .on('pointerdown', () => {
+                this.showMessage('The aliens retaliate violently. They think you\'re threatening them!');
+                this.cameras.main.fade(1500, 255, 0, 0);
+                this.time.delayedCall(1700, () => this.scene.start('endingWar'));
+            });
+            choiceY += 5.5 * s;
+        }
+    }
+}
+
+//Ending Scene Peace
+class EndingPeace extends Phaser.Scene {
+    constructor() { super('endingPeace');}
+
+    create() {
+        this.cameras.main.setBackgroundColor('#126127');
+        this.cameras.main.fadeIn(2000, 0, 0, 0);
+        this.add.text(W * 0.5, H * 0.18, '🌌🤝👾', { fontSize: '106px' }).setOrigin(0.5);
+        this.add.text(W * 0.12, H * 0.505, 
+            'The aliens recognised the ring which was a relic of their ancient society.\n They lowered their weapons and let you leave. \n You return to Earth as the first space ambassador.', {fontSize: '33px', color: '#000000', align: 'center'})
+    }
+}
+//Ending Scene War
+class EndingWar extends Phaser.Scene {
+    constructor() { super('endingWar');}
+
+    create() {
+        this.cameras.main.setBackgroundColor('#581515');
+        this.cameras.main.fadeIn(2000, 0, 0, 0);
+        this.add.text(W * 0.5, H * 0.18, '🚀💥👾', { fontSize: '106px' }).setOrigin(0.5);
+        this.add.text(W * 0.25, H * 0.505, 
+            'The aliens saw your offering as a sign of war.\n They drew their weapons against you and attacked. \n The aliens then enacted an invation of earth.', {fontSize: '33px', color: '#000000', align: 'center'})
+    }
+}
 
 const game = new Phaser.Game({
     scale: {
@@ -259,7 +527,7 @@ const game = new Phaser.Game({
         width: 1920,
         height: 1080
     },
-    scene: [Hub, PlanetXS26, PlanetR40, PlanetBelabog, Canyon],
+    scene: [Intro, Hub, PlanetXS26, PlanetR40, PlanetBelabog, Canyon, Moon, MoonBase, EndingPeace, EndingWar], 
     title: "Adventure-Game",
 });
 

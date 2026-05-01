@@ -234,8 +234,136 @@ class AdventureScene extends Phaser.Scene {
     // Extensions Below
 
 
+    //Scan Planet
+
+    scanPlanet(planet, onComplete){
+        //setup
+        const w = this.w, h = this.h, s = this.s;
+        const cx = w * 0.375;  
+        const cy = h * 0.5;
+        const all = []; //adds all objects so they can be destroyed easily
+
+         const plans = { //planet values for scanner
+            xs26: {
+                label: 'XS-26',
+                col: 0x33dd55, textCol: '#33dd55',
+                lines: [
+                    'AIR QUALITY ......... CRITICAL',
+                    'TOXIC COMPOUNDS ..... DETECTED',
+                    'OXYGEN LEVEL ........ 0.02%',
+                    'SURFACE TEMP ........ +42C',
+                    'HABITABILITY ........ NONE',
+                ]
+            },
+            r40: {
+                label: 'R-40',
+                col: 0xee6633, textCol: '#ee6633',
+                lines: [
+                    'AIR QUALITY ......... ALARMING',
+                    'TOXIC COMPOUNDS ..... LOW',
+                    'OXYGEN LEVEL ........ 0.08%',
+                    'SURFACE TEMP ........ +54C',
+                    'HABITABILITY ........ NONE',
+                ]
+            },
+            belabog: {
+                label: 'BELABOG',
+                col: 0x66aaff, textCol: '#66aaff',
+                lines: [
+                    'AIR QUALITY ......... SERVICABLE',
+                    'TOXIC COMPOUNDS ..... NOT-DETECTED',
+                    'OXYGEN LEVEL ........ 0.6%',
+                    'SURFACE TEMP ........ +3C',
+                    'HABITABILITY ........ LOW',
+                ]
+            }
+        };
+        const plan = plans[planet];
+
+        //background
+        const panel = this.add.rectangle(cx, cy, w * 0.56, h * 0.82, 0x000d18);
+        all.push(panel);
+        //label
+        const header = this.add.text(cx, h * 0.13, `🔬  SCANNING: ${plan.label}`, {
+            fontSize: `${3 * s}px`, color: plan.textCol, fontStyle: 'bold'
+        }).setOrigin(0.5);
+        all.push(header);
+        //make each line fade in
+        let ry = h * 0.36;
+            plan.lines.forEach((line, i) => {
+            const lt = this.add.text(cx - w * 0.22, ry, line, {
+                fontSize: '30px', color: plan.textCol
+                }).setAlpha(0);
+                all.push(lt);
+                this.tweens.add({ targets: lt, alpha: 1, duration: 350, delay: i * 220 });
+                ry += 3.8 * s;
+            });
+            //button to close scanner
+        const closeBtn = this.add.text(cx, h * 0.86, '[ CLOSE SCANNER ]', {
+                    fontSize: '35px', color: '#ffffff'
+                }).setOrigin(0.5).setInteractive()
+                .on('pointerout',  () => closeBtn.setStyle({ color: '#ffffff' }))
+                .on('pointerdown', () => {
+                    all.forEach(e => {{ e.destroy(); }});
+                    closeBtn.destroy();
+                    if (onComplete) onComplete();
+                });
+    }
+    //Sample Collection
+    collectSample(hexColor, item, onComplete) {
+        const w = this.w, h = this.h, s = this.s;
+        const cx = w * 0.375;
+        const cy = h * 0.5;
+        const all = []; //adds all objects so they can be destroyed easily
+
+        //background UI
+        const overlay = this.add.rectangle(cx, cy, w * 0.75, h, 0x000000, 0.78)
+            .setInteractive();
+        all.push(overlay);
+
+        //Label
+        const label = this.add.text(cx, h * 0.1, '🧪  Collecting...', {
+            fontSize: `${2.6 * s}px`, color: '#ffffff'
+        }).setOrigin(0.5);
+        all.push(label);
 
 
+        //Values for placement of vial for sample, so they can be referenced without needing to be recalculated.
+        const vW  = 11 * s;
+        const vH  = 30 * s;
+        const vX  = cx;
+        const vY  = cy + 2 * s;
+        const vBottom = vY + vH * 0.5;
 
+        //v rect parts
+        const vBody = this.add.rectangle(vX, vY, vW, vH, 0xffffff, 0.08)
+            .setStrokeStyle(s * 0.28, 0xdddddd);
+        all.push(vBody);
 
+        const vNeck = this.add.rectangle(vX, vY - vH * 0.5 - 2.5 * s, vW * 0.5, 5 * s, 0xaaaaaa, 0.15)
+            .setStrokeStyle(s * 0.2, 0xaaaaaa);
+        all.push(vNeck);
+        //v fill object
+        const liquid = this.add.rectangle(vX, vBottom, vW - s * 0.8, 0, hexColor, 0.92)
+            .setOrigin(0.5, 1);
+        all.push(liquid);
+        //fill v tween
+        this.tweens.add({
+            targets: liquid,
+            height: vH * -0.86,
+            duration: 2200,
+            ease: 'Cubic.inOut',
+            onComplete: () => {
+                label.setText('✅ Sample Collected!');
+                label.setStyle({ color: '#00ff99' });
+
+                this.gainItem(item);
+
+                this.time.delayedCall(1300, () => {
+                    all.forEach(e => { e.destroy(); });
+                    if (onComplete) onComplete();
+                });
+            }
+        });
+    }
 }
