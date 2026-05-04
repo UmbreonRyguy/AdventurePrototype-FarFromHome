@@ -128,6 +128,15 @@ class Hub extends AdventureScene {
                     onComplete: () => scanner.destroy()
                 });
             });
+            
+            //Partner Suggestion
+            this.add.text(w * 0.2, h * 0.45, '🌌 Look outside through porthole', {
+            fontSize: '32px', color: '#3b59ac'
+            }).setInteractive()
+            .on('pointerover', () => this.showMessage('You can see stars twinkling in the distance and 3 planets in view.'));
+
+
+
         //Console UI
         this.add.rectangle(w * 0.375, h * 0.74, 50 * s, 16 * s, 0x060e1a)
             .setStrokeStyle(s * 0.2, 0x1a3355);
@@ -528,6 +537,6 @@ const game = new Phaser.Game({
         height: 1080
     },
     scene: [Intro, Hub, PlanetXS26, PlanetR40, PlanetBelabog, Canyon, Moon, MoonBase, EndingPeace, EndingWar], 
-    title: "Adventure-Game",
+    title: "root",
 });
 
